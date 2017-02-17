@@ -29,6 +29,11 @@ public class JScreen {
 		
 		pixels = new int[width*height];	
 	}
+	
+    public void setOffset(int xOffset, int yOffset) {
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+    }
 
 	/**
 	 * Render a 8x8 tile fom rthe sprite_sheet.png at a given position

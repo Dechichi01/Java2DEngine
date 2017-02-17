@@ -14,6 +14,7 @@ import com.dechichi.game.gfx.Colours;
 import com.dechichi.game.gfx.Font;
 import com.dechichi.game.gfx.JScreen;
 import com.dechichi.game.gfx.SpriteSheet;
+import com.dechichi.game.level.Level;
 
 /**
  * JGame.java
@@ -42,6 +43,9 @@ public class JGame extends Canvas implements Runnable{
 	
 	private JScreen screen;
 	private InputHandler inputHandler;
+	public Level level;
+	
+	private int xPos = 0, yPos = 0;
 	
 	public JGame()
 	{
@@ -85,6 +89,7 @@ public class JGame extends Canvas implements Runnable{
 		}
 		screen = new JScreen(WIDTH, HEIGHT, new SpriteSheet("/sprite_sheet.png"));
 		inputHandler = new InputHandler(this);
+		level = new Level(64,64);
 	}
 	
 	@Override
@@ -103,8 +108,8 @@ public class JGame extends Canvas implements Runnable{
 			if (currentTickTime - lastTickTime >= nsBetweenTicks)
 			{
 				JTime.Update();
-				Tick();
-				Render();
+				tick();
+				render();
 				lastTickTime = currentTickTime;
 			}			
 			
@@ -117,17 +122,19 @@ public class JGame extends Canvas implements Runnable{
 		}
 	}
 	
-	public void Tick()
+	public void tick()
 	{
 		tickCount++;
 
-		if (inputHandler.up.isPressed()) screen.yOffset += 1;
-		if (inputHandler.down.isPressed()) screen.yOffset -= 1;
-		if (inputHandler.left.isPressed()) screen.xOffset -= 1;
-		if (inputHandler.right.isPressed()) screen.xOffset += 1;
+		if (inputHandler.up.isPressed()) yPos -= 1;
+		if (inputHandler.down.isPressed()) yPos += 1;
+		if (inputHandler.left.isPressed()) xPos -= 1;
+		if (inputHandler.right.isPressed()) xPos += 1;
+		
+		level.tick();
 	}
 	
-	public void Render()
+	public void render()
 	{
 		BufferStrategy bs = getBufferStrategy();
 		if(bs == null)
@@ -136,18 +143,12 @@ public class JGame extends Canvas implements Runnable{
 			return;
 		}
 		
-		//Render level tiles
-		for (int y = 0; y < 32; y++) {
-			for (int x = 0; x < 32; x++) {
-				screen.Render(x*8, y*8, 0, Colours.get(555, 505, 055, 550), x %2 == 1, y %2 ==1);
-			}
-		}
+		//Player on center of the screen
+		int xOffset = xPos - (screen.width/2);
+		int yOffset = yPos - (screen.height/2);
 		
-		String msg = "This is our game!";
-        Font.render(msg, screen,
-                        screen.xOffset + screen.width / 2 - (msg.length() * 8 / 2),
-                        screen.yOffset + screen.height / 2,
-                        Colours.get(-1, -1, -1, 000));
+		//Render level tiles
+		level.renderTiles(screen, xOffset, yOffset);
 		
 		for (int y = 0; y < screen.height; y++) {
 			for (int x = 0; x < screen.width; x++) {
